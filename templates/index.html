@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Главная страница</title>
+        <title>{{ title }}</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Главная страница</title>
@@ -42,26 +42,19 @@
         <div class="container">
             <nav class="navbar navigation " id="top-nav">
                 <a class="navbar-brand logo" href="#">
-                    <h1>Vex</h1>
+                    <h1>Watches</h1>
                 </a>
 
-              <button class="navbar-toggler hidden-lg-up float-lg-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" >
+              <button class="navbar-toggler hidden-lg-up float-lg" type="button" data-toggle="collapse" data-target="#navbarResponsive" >
                   <i class="tf-ion-android-menu"></i>
               </button>
               <div class="collapse navbar-toggleable-md" id="navbarResponsive">
                 <ul class="nav navbar-nav menu float-lg-right" id="top-nav">
-                  <li class=" active">
-                    <a href="#">HOME</a>
+                    {% for m in menu %}
+                  <li>
+                    <class=" active"><a href="{{ m.url }}">{{ m.name }}</a>
                   </li>
-                  <li class="">
-                    <a href="#about">ABOUT</a>
-                  </li>
-                  <li class="">
-                    <a href="#service">SERVICES</a>
-                  </li>
-                  <li class="">
-                    <a href="#contact">CONTACT</a>
-                  </li>
+                    {% endfor %}
                 </ul>
               </div>
             </nav>
@@ -316,11 +309,17 @@
                             <h2 class="subheading">Get Product Updates</h2>
                             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</p>
                             <div class="col-lg-6 offset-lg-3">
-                                <div class="input-group">
-                                  <input type="text" class="form-control" placeholder="Your Email Address Here">
+                                    <form action="", method="post", class="form-contact">
+                                        <input type="text" class="form-control" name="username" placeholder="Ваше имя" value="" requied />
+                                        <br>
+                                        <input type="text" class="form-control" name="phone" placeholder="Ваш телефон" value="" requied />
                                   <span class="input-group-btn">
-                                    <button class="btn btn-default btn-main" type="button">Subscribe</button>
+                                    <div class="input-group">
+                                    <button class="btn btn-default btn-main" input type="submit">Отправить</button>
+                                    </div>
                                   </span>
+                                    </form>
+                                    <div id="flash-messages"></div>
                                 </div><!-- /input-group -->
                               </div><!-- /.col-lg-6 -->
                         </div>
@@ -422,6 +421,30 @@
         <script src="{{ url_for('static', filename='js/owl.carousel.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/jquery.magnific-popup.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+        <script>
+    $(document).ready(function () {
+        $('form').submit(function (e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function (data) {
+                    $('#flash-messages').html(''); // Очистите сообщения об ошибках или подтверждение
+                    if (data.status === 'success') {
+                        $('#flash-messages').html('<div class="flash success">' + data.message + '</div>');
+                    } else {
+                        $('#flash-messages').html('<div class="flash error">' + data.message + '</div>');
+                    }
+                },
+            });
+        });
+    });
+</script>
+</script>
+
 
     </body>
 </html>
