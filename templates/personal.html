@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+
+{% block title %}Персональные данные{% endblock %}
+{% for p in pers %}
+<div class="row">
+    <div class="col-md-4">
+        <p>Имя: {{p.username}} номер телефона: {{p.phone}}</p>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
