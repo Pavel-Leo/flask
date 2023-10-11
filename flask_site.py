@@ -1,16 +1,18 @@
 import os
 import re
 import sqlite3
+from sqlite3 import Connection
+from typing import Literal, Tuple, Union
 
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from FDataBase import FDataBase
 from flask import (
     Flask,
+    Response,
     abort,
     flash,
     g,
-    get_flashed_messages,
     jsonify,
     redirect,
     render_template,
@@ -29,7 +31,7 @@ app.config.from_object(__name__)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flask_site.db')))
 
 
-def connect_db():
+def connect_db() -> Connection:
     conn = sqlite3.connect(app.config['DATABASE'])
     conn.row_factory = sqlite3.Row
     return conn
@@ -43,7 +45,7 @@ def create_db() -> None:
     db.close()
 
 
-def get_db():
+def get_db() -> Connection:
     if not hasattr(g, 'link_db'):
         g.link_db = connect_db()
     return g.link_db
@@ -73,7 +75,7 @@ MENU: list[dict[str, str]] = [
 
 
 @app.errorhandler(404)
-def page_not_found(error):
+def page_not_found(error) -> Tuple[str, Literal[404]]:
     return (
         render_template('404.html', title='Страница не найдена', menu=MENU),
         404,
@@ -81,7 +83,7 @@ def page_not_found(error):
 
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
+def index() -> Union[Response, str]:
     if request.method == 'POST':
         name = request.form['username']
         phone = request.form['phone']
@@ -95,7 +97,8 @@ def index():
                 phone[0] == '8' and len(phone) == 11
             ):
                 res = dbase.add_customer(
-                    request.form['username'], request.form['phone']
+                    request.form['username'],
+                    request.form['phone'],
                 )
                 if res:
                     response_data = {
@@ -117,12 +120,14 @@ def index():
             )
         return jsonify(response_data)
     return render_template(
-        'index.html', title='Главная страница', menu=dbase.get_menu()
+        'index.html',
+        title='Главная страница',
+        menu=dbase.get_menu(),
     )
 
 
 @app.route('/personal')
-def personal():
+def personal() -> Response:
     return render_template(
         'personal.html',
         title='Персональные данные',
@@ -132,30 +137,55 @@ def personal():
 
 
 @app.route('/register', methods=['GET', 'POST'])
-def register():
+def register() -> Union[Response, str]:
     if request.method == 'POST':
         email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         email = request.form['email']
         if not re.match(email_regex, email):
-            flash('Неправильный формат email-адреса. Пожалуйста, введите действительный email.', category='error')
+            flash(
+                (
+                    'Неправильный формат email-адреса. Пожалуйста, введите'
+                    ' действительный email.'
+                ),
+                category='error',
+            )
         else:
-            if len(request.form['username']) > 2 and request.form['password'] == request.form['password_again']:
+            if (
+                len(request.form['username']) > 2
+                and request.form['password'] == request.form['password_again']
+            ):
                 hash = generate_password_hash(request.form['password'])
-                res = dbase.add_user(request.form['username'], request.form['email'], hash)
+                res = dbase.add_user(
+                    request.form['username'],
+                    request.form['email'],
+                    hash,
+                )
                 if res:
                     flash('Вы успешно зарегистрировались', category='success')
                     return redirect(url_for('login'))
                 else:
-                    flash('Такой email или логин уже зарегистрирован', category='error')
+                    flash(
+                        'Такой email или логин уже зарегистрирован',
+                        category='error',
+                    )
             else:
-                flash('Неверно заполнены поля. Логин должен быть больше чем 2 символа. <br> Проверьте правильность email. <br> Проверьте совпадение паролей.', category='error')
+                flash(
+                    (
+                        'Неверно заполнены поля. Логин должен быть больше чем'
+                        ' 2 символа. <br> Проверьте правильность email. <br>'
+                        ' Проверьте совпадение паролей.'
+                    ),
+                    category='error',
+                )
     return render_template(
-        'register.html', menu=dbase.get_menu(), title='Регистрация'
+        'register.html',
+        menu=dbase.get_menu(),
+        title='Регистрация',
     )
 
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def login() -> Response:
     if 'userLogged' in session:
         return redirect(url_for('profile', username=session['userLogged']))
     elif (
@@ -166,22 +196,21 @@ def login():
         session['userLogged'] = request.form['username']
         return redirect(url_for('profile', username=session['userLogged']))
     return render_template(
-        'login.html', menu=dbase.get_menu(), title='Авторизация'
+        'login.html',
+        menu=dbase.get_menu(),
+        title='Авторизация',
     )
 
 
-
-
-
 @app.route('/profile/<username>')
-def profile(username):
+def profile(username: str) -> str:
     if 'userLogged' not in session or session['userLogged'] != username:
         abort(401)
     return f'Пользователь {username}'
 
 
 @app.route('/about')
-def about():
+def about() -> str:
     return '<h1>About Page</h1>'
 
 
