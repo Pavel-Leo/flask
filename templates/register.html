@@ -33,7 +33,7 @@
 		<div class="container-login100">
 			<div class="wrap-login100">
 				{% for cat, msg in get_flashed_messages(True) %}
-					<div class="flash {{cat}}">{{msg}}</div>
+					<div class="flash {{cat}}">{{msg|safe}}</div>
 				{% endfor %}
 				<form action="/register" method="post" class="login100-form validate-form">
 					<span class="login100-form-title p-b-26">

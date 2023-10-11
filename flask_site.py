@@ -137,7 +137,7 @@ def register():
         email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         email = request.form['email']
         if not re.match(email_regex, email):
-            flash("Неправильный формат email-адреса. Пожалуйста, введите действительный email.", category='error')
+            flash('Неправильный формат email-адреса. Пожалуйста, введите действительный email.', category='error')
         else:
             if len(request.form['username']) > 2 and request.form['password'] == request.form['password_again']:
                 hash = generate_password_hash(request.form['password'])
@@ -148,7 +148,7 @@ def register():
                 else:
                     flash('Такой email или логин уже зарегистрирован', category='error')
             else:
-                flash('Неверно заполнены поля. Логин должен быть больше чем 2 символа. Проверьте совпадение паролей.', category='error')
+                flash('Неверно заполнены поля. Логин должен быть больше чем 2 символа. <br> Проверьте правильность email. <br> Проверьте совпадение паролей.', category='error')
     return render_template(
         'register.html', menu=dbase.get_menu(), title='Регистрация'
     )
