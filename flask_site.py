@@ -167,8 +167,11 @@ def login():
     ):
         session['userLogged'] = request.form['username']
         return redirect(url_for('profile', username=session['userLogged']))
-    return render_template('login.html', title='Авторизация', menu=MENU)
+    return render_template('login.html', menu=dbase.get_menu(), title='Авторизация')
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    return render_template('register.html', menu=dbase.get_menu(), title='Регистрация')
 
 @app.route('/profile/<username>')
 def profile(username):
