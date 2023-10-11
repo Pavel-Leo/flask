@@ -32,7 +32,10 @@
 	<div class="limiter">
 		<div class="container-login100">
 			<div class="wrap-login100">
-				<form action="/login" method="post" class="login100-form validate-form">
+				{% for cat, msg in get_flashed_messages(True) %}
+					<div class="flash {{cat}}">{{msg}}</div>
+				{% endfor %}
+				<form action="/register" method="post" class="login100-form validate-form">
 					<span class="login100-form-title p-b-26">
 						Регистрация
 					</span>
@@ -54,8 +57,16 @@
 						<span class="btn-show-pass">
 							<i class="zmdi zmdi-eye"></i>
 						</span>
-						<input class="input100" type="password" name="password" value="" requied>
+						<input class="input100" type="text" name="password" value="" requied>
 						<span class="focus-input100" data-placeholder="Пароль"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input" data-validate="Enter password">
+						<span class="btn-show-pass">
+							<i class="zmdi zmdi-eye"></i>
+						</span>
+						<input class="input100" type="text" name="password_again" value="" requied>
+						<span class="focus-input100" data-placeholder="Повторите пароль"></span>
 					</div>
 
 					<div class="">

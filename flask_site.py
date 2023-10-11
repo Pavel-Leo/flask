@@ -1,5 +1,8 @@
 import os
+import re
 import sqlite3
+
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from FDataBase import FDataBase
 from flask import (
@@ -53,6 +56,7 @@ def before_request() -> None:
     db = get_db()
     dbase = FDataBase(db)
 
+
 @app.teardown_appcontext
 def close_db(error) -> None:
     """Закрытие соединения с БД"""
@@ -103,7 +107,8 @@ def index():
                     }
                 else:
                     response_data['message'] = (
-                        'Неверный формат номера телефона или вы уже заполняли форму'
+                        'Неверный формат номера телефона или вы уже заполняли'
+                        ' форму'
                     )
         else:
             response_data['message'] = (
@@ -119,41 +124,34 @@ def index():
 @app.route('/personal')
 def personal():
     return render_template(
-        'personal.html', title='Персональные данные', menu=dbase.get_menu(), pers=dbase.get_customers(),
+        'personal.html',
+        title='Персональные данные',
+        menu=dbase.get_menu(),
+        pers=dbase.get_customers(),
     )
 
 
-# @app.route('/', methods=['GET', 'POST'])
-# def index():
-#     if request.method == 'POST':
-#         name = request.form['username']
-#         phone = request.form['phone']
-#         if len(name) > 0 and name.isalpha() and len(phone) > 10:
-#             if (phone[:2] == '+7' and len(phone) == 12) or (
-#                 phone[0] == '8' and len(phone) == 11
-#             ):
-#                 flash(
-#                     (
-#                         'Сообщение отправлено. Наш специалист свяжется с вами'
-#                         ' в ближайшее время.'
-#                     ),
-#                     category='success',
-#                 )
-#             else:
-#                 flash('Неверный формат номера телефона', category='error')
-#         else:
-#             flash(
-#                 (
-#                     'Не все поля заполнены верно. Поле "Имя" не может быть'
-#                     ' пустым и должно содержать только буквы, формат телефона'
-#                     ' 8 или +7'
-#                 ),
-#                 category='error',
-#             )
-#         for k, v in request.form.items():
-#             print(v, end=', ')
-#     print(url_for('index'))
-#     return render_template('index.html', title='Главная страница', menu=MENU)
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        email = request.form['email']
+        if not re.match(email_regex, email):
+            flash("Неправильный формат email-адреса. Пожалуйста, введите действительный email.", category='error')
+        else:
+            if len(request.form['username']) > 2 and request.form['password'] == request.form['password_again']:
+                hash = generate_password_hash(request.form['password'])
+                res = dbase.add_user(request.form['username'], request.form['email'], hash)
+                if res:
+                    flash('Вы успешно зарегистрировались', category='success')
+                    return redirect(url_for('login'))
+                else:
+                    flash('Такой email или логин уже зарегистрирован', category='error')
+            else:
+                flash('Неверно заполнены поля. Логин должен быть больше чем 2 символа. Проверьте совпадение паролей.', category='error')
+    return render_template(
+        'register.html', menu=dbase.get_menu(), title='Регистрация'
+    )
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -167,11 +165,13 @@ def login():
     ):
         session['userLogged'] = request.form['username']
         return redirect(url_for('profile', username=session['userLogged']))
-    return render_template('login.html', menu=dbase.get_menu(), title='Авторизация')
+    return render_template(
+        'login.html', menu=dbase.get_menu(), title='Авторизация'
+    )
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    return render_template('register.html', menu=dbase.get_menu(), title='Регистрация')
+
+
+
 
 @app.route('/profile/<username>')
 def profile(username):

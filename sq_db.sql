@@ -29,3 +29,11 @@ CREATE TABLE IF NOT EXISTS products (
     available boolean NOT NULL,
     FOREIGN KEY (category_id) REFERENCES category(id)
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    id integer PRIMARY KEY AUTOINCREMENT,
+    username character(250) NOT NULL,
+    email character(250) NOT NULL,
+    password character(250) NOT NULL,
+    created_at timestamp NOT NULL
+);
