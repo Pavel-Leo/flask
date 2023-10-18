@@ -44,6 +44,29 @@ class FDataBase:
             return False
         return True
 
+    def get_user(self, user_id) -> List:
+        try:
+            self.__cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+            res = self.__cur.fetchone()
+            if not res:
+                print('Пользователь не найден')
+                return False
+            return res
+        except sqlite3.Error():
+            return False
+
+    def get_user_by_email(self, email: str) -> List:
+        try:
+            self.__cur.execute('SELECT * FROM users WHERE email = ?', (email,))
+            res = self.__cur.fetchone()
+            if not res:
+                print('Пользователь не найден')
+                return False
+            return res
+        except sqlite3.Error():
+            print('Пользователь не найден')
+        return False
+
     def add_customer(self, username: str, phone: int) -> bool:
         try:
             created_at = math.floor(time.time())

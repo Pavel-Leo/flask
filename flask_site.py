@@ -4,6 +4,7 @@ import sqlite3
 from sqlite3 import Connection
 from typing import Literal, Tuple, Union
 
+from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from FDataBase import FDataBase
@@ -20,6 +21,7 @@ from flask import (
     session,
     url_for,
 )
+from UserLogin import UserLogin
 
 DATABASE = '/tmp/flask_site.db'
 DEBUG = True
@@ -29,6 +31,17 @@ dbase = None
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flask_site.db')))
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Пожалуйста, войдите в систему'
+login_manager.login_message_category = 'success'
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    print('load_user')
+    return UserLogin().from_db(user_id, dbase)
 
 
 def connect_db() -> Connection:
@@ -83,6 +96,7 @@ def page_not_found(error) -> Tuple[str, Literal[404]]:
 
 
 @app.route('/', methods=['GET', 'POST'])
+@login_required
 def index() -> Union[Response, str]:
     if request.method == 'POST':
         name = request.form['username']
@@ -186,15 +200,23 @@ def register() -> Union[Response, str]:
 
 @app.route('/login', methods=['GET', 'POST'])
 def login() -> Response:
-    if 'userLogged' in session:
-        return redirect(url_for('profile', username=session['userLogged']))
-    elif (
-        request.method == 'POST'
-        and request.form['username'] == 'admin'
-        and request.form['password'] == '123'
-    ):
-        session['userLogged'] = request.form['username']
-        return redirect(url_for('profile', username=session['userLogged']))
+    if current_user.is_authenticated:
+        return redirect(url_for('profile'))
+    if request.method == 'POST':
+        user = dbase.get_user_by_email(request.form['email'])
+        if user and check_password_hash(
+            user['password'], request.form['password'],
+        ):
+            userlogin = UserLogin().create(user)
+            remainme = True if request.form.get('remainme') else False
+
+            login_user(userlogin, remember=remainme)
+            return redirect(request.args.get('next') or url_for('profile'))
+        else:
+            flash(
+                'Неверный логин или пароль. Проверьте правильность',
+                category='error',
+            )
     return render_template(
         'login.html',
         menu=dbase.get_menu(),
@@ -202,11 +224,17 @@ def login() -> Response:
     )
 
 
-@app.route('/profile/<username>')
-def profile(username: str) -> str:
-    if 'userLogged' not in session or session['userLogged'] != username:
-        abort(401)
-    return f'Пользователь {username}'
+@app.route('/logout')
+@login_required
+def logout() -> Response:
+    logout_user()
+    flash('Вы вышли из профиля', category='success')
+    return redirect(url_for('login'))
+
+@app.route('/profile')
+@login_required
+def profile() -> str:
+    return f"""<p><a href="{url_for('logout')}">Выйти из профиля</a></p>user info: {current_user.get_id()}"""
 
 
 @app.route('/about')

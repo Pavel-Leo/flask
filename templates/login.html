@@ -32,7 +32,10 @@
 	<div class="limiter">
 		<div class="container-login100">
 			<div class="wrap-login100">
-				<form action="/login" method="post" class="login100-form validate-form">
+				{% for cat, msg in get_flashed_messages(True) %}
+					<div class="flash {{cat}}">{{msg|safe}}</div>
+				{% endfor %}
+				<form action="" method="post" class="login100-form validate-form">
 					<span class="login100-form-title p-b-26">
 						Авторизация
 					</span>
@@ -40,9 +43,9 @@
 						<i class="zmdi zmdi-font"></i>
 					</span>
 
-					<div class="wrap-input100 validate-input" data-validate = "Логин длиннее 2 символов, не 'me/ME'">
-						<input class="input100" type="text" name="username" value="" requied>
-						<span class="focus-input100" data-placeholder="Логин"></span>
+					<div class="wrap-input100 validate-input" data-validate = "Почта введена неверно'">
+						<input class="input100" type="text" name="email" value="" requied>
+						<span class="focus-input100" data-placeholder="email"></span>
 					</div>
 
 					<div class="wrap-input100 validate-input" data-validate="Enter password">
