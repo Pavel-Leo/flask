@@ -35,5 +35,6 @@ CREATE TABLE IF NOT EXISTS users (
     username character(250) NOT NULL,
     email character(250) NOT NULL,
     password character(250) NOT NULL,
+    avatar BLOB(250) DEFAULT NULL,
     created_at timestamp NOT NULL
 );
