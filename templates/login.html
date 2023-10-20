@@ -45,7 +45,16 @@
 					</span>
 
 					<div class="wrap-input100"><br><br>
-						 {{ form.email()}}
+						<p>{% if form.email.errors %}
+							{{ form.email(class="invalid") }}
+							<p><span class="invalid-feedback">
+								{% for e in form.email.errors %}
+									<span>{{ e }}</span>
+								{% endfor %}
+							</span>
+						{% else %}
+						  {{ form.email(сlass="invalid") }}
+						{% endif %}
 						<span class="focus-input100" data-placeholder="email"></span>
 					</div>
 

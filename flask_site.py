@@ -29,7 +29,7 @@ from flask import (
     url_for,
 )
 
-from forms import LoginForm
+from forms import LoginForm, RegisterForm
 from UserLogin import UserLogin
 
 DATABASE = '/tmp/flask_site.db'
@@ -162,49 +162,27 @@ def personal() -> Response:
 
 @app.route('/register', methods=['GET', 'POST'])
 def register() -> Union[Response, str]:
-    if request.method == 'POST':
-        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        email = request.form['email']
-        if not re.match(email_regex, email):
+    form = RegisterForm()
+    if form.validate_on_submit():
+        hash = generate_password_hash(form.password.data)
+        res = dbase.add_user(
+            form.username.data,
+            form.email.data,
+            hash,
+        )
+        if res:
+            flash('Вы успешно зарегистрировались', category='success')
+            return redirect(url_for('login'))
+        else:
             flash(
-                (
-                    'Неправильный формат email-адреса. Пожалуйста, введите'
-                    ' действительный email.'
-                ),
+                'Такой email или логин уже зарегистрирован, или пароли не совпадают',
                 category='error',
             )
-        else:
-            if (
-                len(request.form['username']) > 2
-                and request.form['password'] == request.form['password_again']
-            ):
-                hash = generate_password_hash(request.form['password'])
-                res = dbase.add_user(
-                    request.form['username'],
-                    request.form['email'],
-                    hash,
-                )
-                if res:
-                    flash('Вы успешно зарегистрировались', category='success')
-                    return redirect(url_for('login'))
-                else:
-                    flash(
-                        'Такой email или логин уже зарегистрирован',
-                        category='error',
-                    )
-            else:
-                flash(
-                    (
-                        'Неверно заполнены поля. Логин должен быть больше чем'
-                        ' 2 символа. <br> Проверьте правильность email. <br>'
-                        ' Проверьте совпадение паролей.'
-                    ),
-                    category='error',
-                )
     return render_template(
         'register.html',
         menu=dbase.get_menu(),
         title='Регистрация',
+        form=form,
     )
 
 

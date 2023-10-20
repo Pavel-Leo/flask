@@ -27,7 +27,25 @@
 
 
 
+.invalid-feedback {
+  font-family: Poppins-Regular;
+  font-size: 13px;
+  color: #c80000;
+  line-height: 1.4;
+  text-align: left;
+  visibility: visible; /* При необходимости, установите видимость элемента */
+  opacity: 1; /* При необходимости, установите непрозрачность элемента */
+  position: relative;
+  max-width: 70%;
+  background-color: #fff;
+  border: 1px solid #c80000;
+  border-radius: 2px;
+  padding: 4px 25px 4px 10px;
+  top: 0;
+  transform: translateY(0);
+}
 
+}
 /*//////////////////////////////////////////////////////////////////
 [ RESTYLE TAG ]*/
 
