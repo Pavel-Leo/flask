@@ -534,3 +534,6 @@ ul.profile-info {
 }
 ul.profile-info li {margin-top: 10px;}
 
+.hide_password {
+  display: none;
+}

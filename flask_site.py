@@ -28,6 +28,8 @@ from flask import (
     session,
     url_for,
 )
+
+from forms import LoginForm
 from UserLogin import UserLogin
 
 DATABASE = '/tmp/flask_site.db'
@@ -210,15 +212,12 @@ def register() -> Union[Response, str]:
 def login() -> Response:
     if current_user.is_authenticated:
         return redirect(url_for('profile'))
-    if request.method == 'POST':
-        user = dbase.get_user_by_email(request.form['email'])
-        if user and check_password_hash(
-            user['password'],
-            request.form['password'],
-        ):
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = dbase.get_user_by_email(form.email.data)
+        if user and check_password_hash(user['password'], form.password.data):
             userlogin = UserLogin().create(user)
-            remainme = True if request.form.get('remainme') else False
-
+            remainme = form.remainme.data
             login_user(userlogin, remember=remainme)
             return redirect(request.args.get('next') or url_for('profile'))
         else:
@@ -226,11 +225,31 @@ def login() -> Response:
                 'Неверный логин или пароль. Проверьте правильность',
                 category='error',
             )
+
     return render_template(
-        'login.html',
-        menu=dbase.get_menu(),
-        title='Авторизация',
+        'login.html', menu=dbase.get_menu(), title='Авторизация', form=form,
     )
+    # if request.method == 'POST':
+    #     user = dbase.get_user_by_email(request.form['email'])
+    #     if user and check_password_hash(
+    #         user['password'],
+    #         request.form['password'],
+    #     ):
+    #         userlogin = UserLogin().create(user)
+    #         remainme = True if request.form.get('remainme') else False
+
+    #         login_user(userlogin, remember=remainme)
+    #         return redirect(request.args.get('next') or url_for('profile'))
+    #     else:
+    #         flash(
+    #             'Неверный логин или пароль. Проверьте правильность',
+    #             category='error',
+    #         )
+    # return render_template(
+    #     'login.html',
+    #     menu=dbase.get_menu(),
+    #     title='Авторизация',
+    # )
 
 
 @app.route('/logout')

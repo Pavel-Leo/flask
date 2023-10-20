@@ -5,6 +5,7 @@ certifi==2023.7.22
 charset-normalizer==2.0.12
 click==8.1.7
 colorama==0.4.6
+email-validator
 flake8==6.0.0
 flake8-annotations==3.0.1
 flake8-commas==2.1.0
