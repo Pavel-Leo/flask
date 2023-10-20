@@ -29,6 +29,7 @@ from flask import (
     url_for,
 )
 
+from admin.admin import admin
 from forms import LoginForm, RegisterForm
 from UserLogin import UserLogin
 
@@ -41,6 +42,8 @@ dbase = None
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flask_site.db')))
+
+app.register_blueprint(admin, url_prefix='/admin')
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -175,7 +178,10 @@ def register() -> Union[Response, str]:
             return redirect(url_for('login'))
         else:
             flash(
-                'Такой email или логин уже зарегистрирован, или пароли не совпадают',
+                (
+                    'Такой email или логин уже зарегистрирован, или пароли не'
+                    ' совпадают'
+                ),
                 category='error',
             )
     return render_template(
@@ -205,7 +211,10 @@ def login() -> Response:
             )
 
     return render_template(
-        'login.html', menu=dbase.get_menu(), title='Авторизация', form=form,
+        'login.html',
+        menu=dbase.get_menu(),
+        title='Авторизация',
+        form=form,
     )
     # if request.method == 'POST':
     #     user = dbase.get_user_by_email(request.form['email'])

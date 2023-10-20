@@ -49,7 +49,9 @@ class FDataBase:
             return False
         try:
             binary = sqlite3.Binary(avatar)
-            self.__cur.execute(f"UPDATE users SET avatar = ? WHERE id = ?", (binary, user_id))
+            self.__cur.execute(
+                f"UPDATE users SET avatar = ? WHERE id = ?", (binary, user_id)
+            )
             self.__db.commit()
         except Exception as ex:
             print(ex)
